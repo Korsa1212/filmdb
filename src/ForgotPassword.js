@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
 function ForgotPassword() {
-  const supabase = createClient('https://vvacfhireitcofqbtxnv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2YWNmaGlyZWl0Y29mcWJ0eG52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MjE0NTYsImV4cCI6MjA1ODQ5NzQ1Nn0.8zGhQOqH-MyUm8qWsqkbMACiNOzx7SVpddct5mmhr8A');
+
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -12,8 +12,9 @@ function ForgotPassword() {
   const handleForgotPassword = async (event) => {
     event.preventDefault();
     try {
+      const redirectUrl = window.location.origin + '/updatepassword';
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://filmdata.onrender.com/updatepassword',
+        redirectTo: redirectUrl,
       })
       if (error) {
         setErrorMessage(error.message);

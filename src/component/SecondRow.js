@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaStar } from 'react-icons/fa';
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../supabaseClient";
 import ReactStars from "react-rating-stars-component";
 
 
@@ -12,10 +12,8 @@ function SecondRow(props) {
     const [rating,setRating]=useState(null);
     const [ratevalue, setRatevalue] = useState(0); // Initialisation à 0 par défaut
 
-    const supabase = createClient(
-        "https://ksnouxckabitqorjucgz.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtzbm91eGNrYWJpdHFvcmp1Y2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ0MzM4ODgsImV4cCI6MjAzMDAwOTg4OH0.17MF1DByop1lCcnefGB8t3AcS1CGcJvbzunwY3QbK_c"
-      );
+
+
 
       useEffect(() => {
         const fetchUserData = async () => {

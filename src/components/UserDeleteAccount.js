@@ -1,14 +1,14 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../supabaseClient";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Header";
 import Footer from "../Footer";
 import styles from "./UserDeleteAccount.module.css";
 
-const supabaseUrl = "https://vvacfhireitcofqbtxnv.supabase.co";
+const supabaseUrl = "https://doydeobkijbxnbvklnrc.supabase.co";
 const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2YWNmaGlyZWl0Y29mcWJ0eG52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MjE0NTYsImV4cCI6MjA1ODQ5NzQ1Nn0.8zGhQOqH-MyUm8qWsqkbMACiNOzx7SVpddct5mmhr8A"; // Replace with your actual Supabase anonymous key
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRveWRlb2JraWpieG5idmtsbnJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3MjU0MDksImV4cCI6MjA1ODMwMTQwOX0.Mieyx9jS9dhtXWj60DXLdz3qujTS8c2A4pcV-FK4so4"; // Replace with your actual Supabase anonymous key
+
 
 const UserDeleteAccount = () => {
   const [password, setPassword] = useState("");

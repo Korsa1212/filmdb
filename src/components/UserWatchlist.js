@@ -1,174 +1,123 @@
-import { createClient } from "@supabase/supabase-js";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-
-const MovieCard = ({ movie }) => {
-  const navigate = useNavigate();
-
-  const handleMovieClick = () => {
-    navigate(`/movie/${movie.id}`);
-  };
-
-  return (
-    <div
-      onClick={handleMovieClick}
-      style={{
-        backgroundColor: "#000",
-        color: "#fff",
-        padding: "10px",
-        borderRadius: "5px",
-        boxShadow: "0 0 10px rgba(0, 0, 0, 0.2)",
-        margin: "10px",
-        width: "250px",
-        height: "300px",
-        textAlign: "center",
-        cursor: "pointer",
-      }}
-      className="movie_card"
-    >
-      <img
-        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-        alt={movie.title}
-        style={{ width: "200px", height: "200px" }}
-      />
-      <h3 style={{ fontSize: "20px", margin: "10px auto" }}>{movie.title}</h3>
-    </div>
-  );
-};
+import { supabase } from '../supabaseClient';
 
 const UserWatchlist = () => {
-  const supabaseUrl = "https://vvacfhireitcofqbtxnv.supabase.co";
-  const supabaseAnonKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2YWNmaGlyZWl0Y29mcWJ0eG52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MjE0NTYsImV4cCI6MjA1ODQ5NzQ1Nn0.8zGhQOqH-MyUm8qWsqkbMACiNOzx7SVpddct5mmhr8A";
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
   const [session, setSession] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
-  const [movies, setMovies] = useState([]);
+  const [reviewText, setReviewText] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data, error } = await supabase.auth.getSession();
-
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
       if (error) {
-        console.error("Error fetching user data:", error.message);
+        console.error("Error fetching user:", error.message);
       } else {
-        setSession(data.session);
+        setSession(data.user ? { user: data.user } : null);
+        if (data.user) {
+          fetchWatchlist(data.user.id);
+        }
       }
     };
-
-    fetchUserData();
+    fetchUser();
   }, []);
 
-  useEffect(() => {
-    if (session) {
-      const fetchWatchlistData = async () => {
-        const { data, error } = await supabase
-          .from("watchlist")
-          .select("movie_id")
-          .eq("user_id", session.user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching watchlist:", error.message);
-        } else {
-          setWatchlist(data);
-          // console.log(data);
-        }
-      };
-
-      fetchWatchlistData();
+  const fetchWatchlist = async (userId) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("watchlist")
+      .select("*, movies(*), reviews(*)")
+      .eq("user_id", userId);
+    if (error) {
+      console.error("Error fetching watchlist:", error.message);
+    } else {
+      setWatchlist(data || []);
     }
-  }, [session]);
-
-  const fetchMovieDetails = async (movieId) => {
-    const options = {
-      method: "GET",
-      url: `https://api.themoviedb.org/3/movie/${movieId}`,
-      params: {
-        api_key: "b2efe9b0108d8645f514bc9b0363d199",
-      },
-    };
-
-    try {
-      const response = await axios.request(options);
-      setMovies((prevMovies) => [...prevMovies, response.data]);
-      // console.log(movies);
-    } catch (error) {
-      console.error(error);
-    }
+    setLoading(false);
   };
 
-  useEffect(() => {
-    const fetchMovies = async () => {
-      for (const item of watchlist) {
-        await fetchMovieDetails(item.movie_id);
-        // console.log(item);
-      }
-    };
+  const handleAddReview = async (movieId) => {
+    if (!reviewText.trim()) return;
+    setLoading(true);
+    const { error } = await supabase.from("reviews").insert([
+      {
+        user_id: session.user.id,
+        movie_id: movieId,
+        review: reviewText,
+      },
+    ]);
+    if (error) {
+      alert("Error adding review: " + error.message);
+    } else {
+      alert("Review added!");
+      setReviewText("");
+      setSelectedMovie(null);
+      fetchWatchlist(session.user.id);
+    }
+    setLoading(false);
+  };
 
-    fetchMovies();
+  if (!session) return <div>Please log in to view your watchlist.</div>;
 
-    setMovies([]);
-  }, [watchlist]);
+  console.log("Session:", session);
 
-  // };
   return (
-    <div className="watchlist">
-      <div className="lists">
-        <div className="rating">
-          <h2
-            style={{
-              color: "gold",
-              fontWeight: "bold",
-              textAlign: "center",
-              fontSize: "40px",
-              marginBottom: "20px",
-            }}
-          >
-            Your Watchlist{" "}
-          </h2>
-          <div>
-            <Slider
-              dots={true}
-              infinite={false}
-              slidesToShow={4}
-              slidesToScroll={1}
-              responsive={[
-                {
-                  breakpoint: 1024,
-                  settings: {
-                    slidesToShow: 2,
-                  },
-                },
-                {
-                  breakpoint: 768,
-                  settings: {
-                    slidesToShow: 1,
-                  },
-                },
-              ]}
-            >
-              {movies.length > 0 ? (
-                movies.map((movie, index) => {
-                  return (
-                    <div key={`${movie.id}-${index}`}>
-                      <MovieCard movie={movie} />
-                    </div>
-                  );
-                })
-              ) : (
-                <div>No movies in the watchlist </div>
-              )}
-            </Slider>
-          </div>
-        </div>
-      </div>
-    </div>
+    <section className="user-watchlist-section">
+      {session && session.user ? (
+        <div style={{ color: "lime" }}>Logged in as: {session.user.email}</div>
+      ) : (
+        <div style={{ color: "red" }}>Not authenticated</div>
+      )}
+      <h2 style={{ color: "#ffd700" }}>My Watchlist</h2>
+      {loading && <div>Loading...</div>}
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {watchlist.map((item) => (
+          <li key={item.id} style={{ marginBottom: "2rem", background: "#222", padding: "1rem", borderRadius: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <img
+                src={`https://image.tmdb.org/t/p/w200/${item.movies?.poster_path}`}
+                alt={item.movies?.title}
+                style={{ width: "100px", borderRadius: "8px", marginRight: "1rem" }}
+              />
+              <div>
+                <h3 style={{ color: "#fff" }}>{item.movies?.title}</h3>
+                <button
+                  onClick={() => setSelectedMovie(item.movies?.id)}
+                  style={{ marginTop: "0.5rem", background: "#ffd700", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", cursor: "pointer" }}
+                >
+                  Leave a Review
+                </button>
+                {selectedMovie === item.movies?.id && (
+                  <div style={{ marginTop: "1rem" }}>
+                    <textarea
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      placeholder="Write your review here..."
+                      rows={3}
+                      style={{ width: "100%", borderRadius: "4px", padding: "0.5rem" }}
+                    />
+                    <button
+                      onClick={() => handleAddReview(item.movies?.id)}
+                      style={{ marginTop: "0.5rem", background: "#28a745", color: "#fff", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", cursor: "pointer" }}
+                    >
+                      Submit Review
+                    </button>
+                  </div>
+                )}
+                {item.reviews && item.reviews.length > 0 && (
+                  <div style={{ marginTop: "1rem" }}>
+                    <h4 style={{ color: "#ffd700" }}>Your Review:</h4>
+                    <p style={{ color: "#fff" }}>{item.reviews[0].review}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {watchlist.length === 0 && !loading && <div style={{ color: "#fff" }}>No films in your watchlist yet.</div>}
+    </section>
   );
 };
 

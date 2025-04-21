@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../supabaseClient";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -51,28 +51,30 @@ const MovieCard = ({ movie, rating, create }) => {
 };
 
 const UserRating = () => {
-  const supabaseUrl = "https://vvacfhireitcofqbtxnv.supabase.co";
-  const supabaseAnonKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2YWNmaGlyZWl0Y29mcWJ0eG52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MjE0NTYsImV4cCI6MjA1ODQ5NzQ1Nn0.8zGhQOqH-MyUm8qWsqkbMACiNOzx7SVpddct5mmhr8A";
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
   const [session, setSession] = useState(null);
   const [movies, setMovies] = useState([]);
   const [rating, setRating] = useState([]);
   const [moviesrating, setMoviesRating] = useState([]);
 
   useEffect(() => {
+    // Fetch user on mount
     const fetchUserData = async () => {
-      const { data, error } = await supabase.auth.getSession();
-
+      const { data, error } = await supabase.auth.getUser();
       if (error) {
         console.error("Error fetching user data:", error.message);
       } else {
-        setSession(data.session);
+        setSession(data.user ? { user: data.user } : null);
       }
     };
-
     fetchUserData();
+
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {

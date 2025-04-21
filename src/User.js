@@ -1,20 +1,15 @@
 // export default User;
 import React, { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "./supabaseClient";
 import Header from "./Header";
 import "./UserStyle.css";
 import Footer from "./Footer";
 
 import UserRating from "./components/UserRating";
 
-import UserWatchist from "./components/UserWatchlist";
+import UserWatchlist from "./components/UserWatchlist";
 import UserReview from "./components/UserReviews";
 
-// Initialize Supabase client outside of the component
-const supabaseUrl = "https://vvacfhireitcofqbtxnv.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2YWNmaGlyZWl0Y29mcWJ0eG52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MjE0NTYsImV4cCI6MjA1ODQ5NzQ1Nn0.8zGhQOqH-MyUm8qWsqkbMACiNOzx7SVpddct5mmhr8A";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function User() {
   const [userData, setUserData] = useState(null);
@@ -67,7 +62,7 @@ function User() {
               </div>
             </div>
           )}
-          <UserWatchist />
+          <UserWatchlist />
 
           <UserRating />
 

@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "./supabaseClient";
 import "./App.css";
 import "./headerStyle.css";
 import "./searchResultsDropdown.css";
 
 function Header() {
-  const supabase = createClient(
-    "https://vvacfhireitcofqbtxnv.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2YWNmaGlyZWl0Y29mcWJ0eG52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MjE0NTYsImV4cCI6MjA1ODQ5NzQ1Nn0.8zGhQOqH-MyUm8qWsqkbMACiNOzx7SVpddct5mmhr8A"
-  );
+
 
   const navigate = useNavigate();
 
